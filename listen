@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import time
+import subprocess
+import signal
+import Growl
+
+processes = []
+FNULL = open('/dev/null', 'w')
+notifier = Growl.GrowlNotifier('latex_monitor', ['Compiled'])
+notifier.register()
+
+def main():
+	wd = os.getcwd()
+	info = os.listdir(wd)
+	work = make_dict(info)
+	show = True
+	
+	if '-noshow' in sys.argv:
+		show = False
+	if len(work) == 0:
+		print 'Directory contains no .tex files'
+	else:
+		for var in work:
+			to_pdf(var)
+			show_tex(var)
+		if show:
+			show_pdf(wd)
+		while(True):
+			time.sleep(1)
+			check(work)
+
+def make_dict(info):
+	ret = {}
+	for var in info:
+		if '.tex' in var and 'log' not in var and 'swp' not in var:
+			ret[var] = os.stat(var).st_mtime
+	return ret
+
+def check(work):
+	for key in work.keys():
+		old_time = work[key]
+		new_time = os.stat(key).st_mtime
+		if new_time > old_time:
+			print 'Changes in '+key
+			work[key] = new_time
+			to_pdf(key)
+	return work
+
+def show_pdf(wd):
+	info = os.listdir(wd)
+	for var in info:
+		if '.pdf' in var:
+			evince(var)
+
+def to_pdf(key):
+	if '-v' in sys.argv or '-verbose' in sys.argv:
+		p=subprocess.Popen(['pdflatex','-halt-on-error',key])
+		q=p.wait()
+		processes.append(p)
+	else:
+		p=subprocess.Popen(['pdflatex','-halt-on-error',key], stdout=FNULL, stderr=FNULL)
+		q=p.wait()
+		processes.append(p)
+	if q == 0:
+	    notifier.notify('Compiled','PDF compiled',key)
+	else:
+	    notifier.notify('Compiled','Compile error',key)
+def show_tex(key):
+    processes.append(subprocess.Popen(['open',key]))
+    
+def evince(key):
+	processes.append(subprocess.Popen(['open','-a','Preview',key]))
+
+if __name__ == '__main__':
+	sys.argv[0] = "emoboy 3000"
+	try:
+		main()
+	except KeyboardInterrupt:
+		for p in processes:
+			if '-v' in sys.argv or '-verbose' in sys.argv:
+				print 'Stopping process with id '+ str(p.pid)
+			p.kill()
