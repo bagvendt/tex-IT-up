@@ -11,3 +11,4 @@ Add more system arguments
 Document code
 Write a simple man(ual) for the code
 Make a better README
+Add ubuntu/mac detection (for pdf reader and notifications)
