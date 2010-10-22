@@ -1,3 +1,13 @@
-Created the repository for tex it up
+******************************************
+**		TEX IT UP 0.1	        **
+******************************************
 
-OK!
+tex-IT-up is a script for rapidly managing .tex files
+
+TODO:
+Add handler magic
+Add ubuntu notifications
+Add more system arguments
+Document code
+Write a simple man(ual) for the code
+Make a better README
