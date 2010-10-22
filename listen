@@ -73,7 +73,7 @@ def show_tex(key):
     
 def evince(key):
 	##ost
-	processes.append(subprocess.Popen(['open','-a','Preview',key]))
+	processes.append(subprocess.Popen(['open','-a','Prevew',key]))
 
 if __name__ == '__main__':
 	sys.argv[0] = "emoboy 3000"
